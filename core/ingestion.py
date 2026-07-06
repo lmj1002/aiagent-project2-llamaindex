@@ -15,7 +15,7 @@ from llama_index.vector_stores.chroma import ChromaVectorStore
 from llama_index.storage.docstore.redis import RedisDocumentStore
 from llama_index.storage.index_store.redis import RedisIndexStore
 import chromadb
-from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+from llama_index.embeddings.dashscope import DashScopeEmbedding
 from llama_index.llms.dashscope import DashScope
 from config.settings import Settings as AppSettings
 from utils.logger import setup_logger
@@ -39,15 +39,16 @@ class DocumentIngestionPipeline:
         self._initialize_storage_components()
 
     def _setup_models(self):
-        """设置LLM和嵌入模型"""
+        """设置LLM和嵌入模型（全部使用 DashScope API，无需本地模型文件）"""
         Settings.llm = DashScope(
             api_key=AppSettings.OPENAI_API_KEY,
             api_base=AppSettings.API_BASE_URL,
             model=AppSettings.OPENAI_MODEL,
             temperature=AppSettings.OPENAI_TEMPERATURE
         )
-        Settings.embed_model = HuggingFaceEmbedding(
-            model_name=AppSettings.EMBEDDING_MODEL_PATH
+        Settings.embed_model = DashScopeEmbedding(
+            model_name=AppSettings.EMBEDDING_MODEL,
+            api_key=AppSettings.OPENAI_API_KEY,
         )
 
     def _create_pipeline(self):

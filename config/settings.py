@@ -14,7 +14,8 @@ class Settings:
     API_BASE_URL = os.getenv("DASHSCOPE_BASE_URL")
     OPENAI_MODEL: str = "qwen-plus-2025-07-14"
     OPENAI_TEMPERATURE: float = 0.1
-    EMBEDDING_MODEL_PATH: str = r"D:\\llm\\Local_model\\BAAI\\bge-large-zh-v1___5"
+    # DashScope Embedding 模型（API调用，无需本地文件）
+    EMBEDDING_MODEL: str = "text-embedding-v3"
 
     # VLM配置（用于图片语义描述，增强图片可检索性）
     VLM_MODEL: str = "qwen-vl-plus-latest"
@@ -27,9 +28,9 @@ class Settings:
 
     # 检索配置
     SIMILARITY_TOP_K: int = 5
-    RERANK_TOP_K: int = 3
+    RERANK_TOP_K: int = 3          # LLMRerank 保留节点数
+    RERANK_CHOICE_BATCH_SIZE: int = 10   # LLMRerank 单批处理节点数
     SIMILARITY_CUTOFF: float = 0.5
-    RERANK_MODEL_PATH: str = r"D:\llm\Local_model\BAAI\bge-reranker-large"
 
     # 存储配置
     CHROMA_PERSIST_DIR: str = "./chroma_db"
