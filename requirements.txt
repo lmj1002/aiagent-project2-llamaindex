@@ -8,6 +8,7 @@ llama-index-vector-stores-chroma>=0.5.0
 llama-index-retrievers-bm25>=0.7.0
 llama-index-storage-docstore-redis>=0.5.0
 llama-index-storage-index-store-redis>=0.6.0
+llama-index-postprocessor-dashscope-rerank>=0.5.0
 
 # PDF文档解析
 unstructured>=0.17.2
@@ -16,8 +17,8 @@ pi_heif>=0.22.0
 unstructured-inference>=1.0.5
 pdf2image>=1.17.0
 
-# 前端界面
-gradio>=4.0.0
+# 前端界面（代码已适配 Gradio 6.x API；装回 4.x 会因 huggingface_hub>=1.0 触发 HfFolder 导入冲突）
+gradio>=6.0.0
 
 # 文档处理
 pypdf>=3.0.0

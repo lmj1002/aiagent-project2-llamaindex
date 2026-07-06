@@ -33,7 +33,8 @@ def main():
         share=True,
         server_name=Settings.SERVER_HOST,
         server_port=Settings.SERVER_PORT,
-        show_error=True
+        show_error=True,
+        theme=gr.themes.Soft()
     )
 
 

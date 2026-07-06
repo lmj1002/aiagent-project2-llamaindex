@@ -9,7 +9,7 @@ def create_gradio_interface() -> gr.Blocks:
     app = RAGApplication()  # 主函数
     doc_manger = DocumentManager()  # 文档管理器
 
-    with gr.Blocks(title="图灵AI", theme=gr.themes.Soft()) as interface:
+    with gr.Blocks(title="图灵AI") as interface:
         # 顶部标题区域
         gr.Markdown("""
         <div style="text-align: center;">
@@ -58,7 +58,6 @@ def create_gradio_interface() -> gr.Blocks:
                         lines=3,
                         interactive=False,
                         placeholder="等待上传文档...",
-                        show_copy_button=True
                     )
 
                 with gr.Group():
@@ -116,7 +115,6 @@ def create_gradio_interface() -> gr.Blocks:
 
                 # 聊天机器人界面
                 chatbot = gr.Chatbot(
-                    type="messages",
                     label="RAG 对话历史",
                     height=450,
                     show_label=False,
@@ -125,9 +123,6 @@ def create_gradio_interface() -> gr.Blocks:
                         "./avatars/avatar.png",
                         "./avatars/assistant.png"
                     ),
-                    watermark="此回答是由AI进行回复,请仔细甄别回复的消息",
-                    bubble_full_width=False,
-                    show_copy_button=True
                 )
 
                 # 输入区域

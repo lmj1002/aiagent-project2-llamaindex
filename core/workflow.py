@@ -2,7 +2,7 @@ from llama_index.core import VectorStoreIndex
 from llama_index.core.workflow import Context, Workflow, step, StopEvent, StartEvent
 from llama_index.core.retrievers import VectorIndexRetriever
 from llama_index.core.response_synthesizers import get_response_synthesizer
-from llama_index.core.postprocessor import LLMRerank
+from llama_index.postprocessor.dashscope_rerank import DashScopeRerank
 from llama_index.retrievers.bm25 import BM25Retriever
 from llama_index.core.retrievers import QueryFusionRetriever
 from config.settings import Settings as AppSettings
@@ -27,10 +27,10 @@ class RAGWorkflow(Workflow):
             index=self.index,
             similarity_top_k=AppSettings.SIMILARITY_TOP_K
         )
-        # 配置重排序器：使用 LLMRerank，调用已配置的 DashScope LLM，无需本地模型
-        self.postprocessor = LLMRerank(
+        # 配置重排序器：使用阿里云原生 gte-rerank 模型，直接返回相关性分数，无需本地模型
+        self.postprocessor = DashScopeRerank(
             top_n=AppSettings.RERANK_TOP_K,
-            choice_batch_size=AppSettings.RERANK_CHOICE_BATCH_SIZE,
+            api_key=AppSettings.OPENAI_API_KEY,
         )
         self.BM25_retriever = BM25Retriever.from_defaults(
             docstore=self.index.docstore, similarity_top_k=AppSettings.SIMILARITY_TOP_K
@@ -75,8 +75,21 @@ class RAGWorkflow(Workflow):
         """重排序步骤"""
         logger.info("开始重排序")
 
-        # 应用重排序
-        rerank_nodes = self.postprocessor.postprocess_nodes(ev.nodes, query_str=ev.query)
+        try:
+            # 应用重排序（DashScope gte-rerank）
+            rerank_nodes = self.postprocessor.postprocess_nodes(ev.nodes, query_str=ev.query)
+            # 重排返回空结果时也回退，避免生成空响应
+            if not rerank_nodes:
+                raise ValueError("重排序返回空结果")
+        except Exception as e:
+            # 重排失败（如模型未开通、网络异常）时，回退到按检索分数取 top_n，
+            # 保证链路不因重排失败而中断或返回空响应
+            logger.warning(f"重排序失败，回退到检索分数排序: {e}")
+            rerank_nodes = sorted(
+                ev.nodes,
+                key=lambda n: n.score if n.score is not None else 0.0,
+                reverse=True,
+            )[:AppSettings.RERANK_TOP_K]
 
         logger.info(f"重排序后保留 {len(rerank_nodes)} 个节点")
 
