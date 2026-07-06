@@ -42,8 +42,7 @@ class DocumentIngestionPipeline:
         """设置LLM和嵌入模型（全部使用 DashScope API，无需本地模型文件）"""
         Settings.llm = DashScope(
             api_key=AppSettings.OPENAI_API_KEY,
-            api_base=AppSettings.API_BASE_URL,
-            model=AppSettings.OPENAI_MODEL,
+            model_name=AppSettings.OPENAI_MODEL,
             temperature=AppSettings.OPENAI_TEMPERATURE
         )
         Settings.embed_model = DashScopeEmbedding(

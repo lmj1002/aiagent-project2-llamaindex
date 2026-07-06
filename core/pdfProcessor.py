@@ -9,7 +9,7 @@ import re
 from openai import OpenAI
 from unstructured.partition.pdf import partition_pdf
 from unstructured.documents.elements import Image, Text, Title, NarrativeText, Table
-from llama_index.core.schema import Document, TextNode
+from llama_index.core.schema import TextNode
 from config.settings import Settings as AppSettings
 from utils.logger import setup_logger
 

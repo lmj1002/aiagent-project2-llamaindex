@@ -1,19 +1,20 @@
 # LlamaIndex RAG应用依赖包
-# 核心框架
-llama-index>=0.10.0
-llama-index-llms-dashscope==0.4.0
-llama-index-embeddings-dashscope>=0.2.0
-llama-index-vector-stores-chroma==0.4.2
-llama-index-retrievers-bm25==0.5.2
-llama-index-storage-docstore-redis==0.3.0
-llama-index-storage-index-store-redis==0.4.0
+# 核心框架（对齐 llama-index-core 0.14.x，避免老版本 pin 触发降级与依赖冲突）
+llama-index>=0.14.0
+llama-index-core>=0.14.0
+llama-index-llms-dashscope>=0.6.0
+llama-index-embeddings-dashscope>=0.5.0
+llama-index-vector-stores-chroma>=0.5.0
+llama-index-retrievers-bm25>=0.7.0
+llama-index-storage-docstore-redis>=0.5.0
+llama-index-storage-index-store-redis>=0.6.0
 
 # PDF文档解析
-unstructured==0.17.2
-pdfminer.six==20250506
-pi_heif==0.22.0
-unstructured-inference==1.0.5
-pdf2image==1.17.0
+unstructured>=0.17.2
+pdfminer.six>=20250506
+pi_heif>=0.22.0
+unstructured-inference>=1.0.5
+pdf2image>=1.17.0
 
 # 前端界面
 gradio>=4.0.0
