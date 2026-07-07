@@ -2,6 +2,8 @@ import os
 import sys
 from pathlib import Path
 
+import gradio as gr
+
 # 添加项目根目录到Python路径
 sys.path.append(str(Path(__file__).parent))
 
