@@ -27,8 +27,9 @@ class RAGWorkflow(Workflow):
             index=self.index,
             similarity_top_k=AppSettings.SIMILARITY_TOP_K
         )
-        # 配置重排序器：使用阿里云原生 gte-rerank 模型，直接返回相关性分数，无需本地模型
+        # 配置重排序器：使用阿里云原生 qwen3-vl-rerank 模型
         self.postprocessor = DashScopeRerank(
+            model=AppSettings.RERANK_MODEL,
             top_n=AppSettings.RERANK_TOP_K,
             api_key=AppSettings.OPENAI_API_KEY,
         )

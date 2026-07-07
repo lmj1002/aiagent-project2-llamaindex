@@ -28,8 +28,9 @@ class Settings:
 
     # 检索配置
     SIMILARITY_TOP_K: int = 5
-    RERANK_TOP_K: int = 3          # LLMRerank 保留节点数
-    RERANK_CHOICE_BATCH_SIZE: int = 10   # LLMRerank 单批处理节点数
+    RERANK_TOP_K: int = 3
+    RERANK_MODEL: str = "gte-rerank-v2"   # DashScope 重排序模型
+    RERANK_CHOICE_BATCH_SIZE: int = 10
     SIMILARITY_CUTOFF: float = 0.5
 
     # 存储配置
