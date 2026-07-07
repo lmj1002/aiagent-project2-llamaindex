@@ -87,26 +87,33 @@ class MultimodalPDFProcessor:
         return images, texts, tables
 
     def _fallback_extract_with_pypdf(self, pdf_path: str) -> List[Dict]:
-        """pypdf 兜底：按页提取文本，返回与 unstructured 相同格式的 texts 列表"""
+        """pypdf 兜底：按页提取文本，清洗后返回与 unstructured 相同格式的 texts 列表"""
         try:
             from pypdf import PdfReader
             reader = PdfReader(pdf_path)
             texts = []
             for page_num, page in enumerate(reader.pages, start=1):
-                content = page.extract_text() or ""
+                raw = page.extract_text() or ""
+                # 清洗：去掉 null 字节和不可见控制字符，保留换行/制表
+                content = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]', '', raw)
                 content = content.strip()
-                if content:
-                    texts.append({
-                        'type': 'NarrativeText',
-                        'page': page_num,
-                        'bbox': None,
-                        'content': content,
-                        'element_id': f"{Path(pdf_path).stem}_page{page_num}",
-                    })
-            logger.info(f"pypdf 提取完成: {len(reader.pages)} 页，有文字页: {len(texts)}")
+                if not content:
+                    continue
+                # 按 CHUNK_SIZE 拆页内容，避免单个文本块过长导致 embedding 返回 None
+                for chunk_start in range(0, len(content), AppSettings.CHUNK_SIZE):
+                    chunk = content[chunk_start:chunk_start + AppSettings.CHUNK_SIZE]
+                    if chunk.strip():
+                        texts.append({
+                            'type': 'NarrativeText',
+                            'page': page_num,
+                            'bbox': None,
+                            'content': chunk,
+                            'element_id': f"{Path(pdf_path).stem}_p{page_num}_c{chunk_start}",
+                        })
+            logger.info(f"pypdf 兜底完成: {len(reader.pages)} 页 → {len(texts)} 个文本块")
             return texts
         except Exception as e:
-            logger.error(f"pypdf 兜底也失败: {e}")
+            logger.error(f"pypdf 兜底失败: {e}")
             return []
 
     def _process_image_element(self, element: Image, element_info: Dict, pdf_path: str) -> Optional[Dict]:
