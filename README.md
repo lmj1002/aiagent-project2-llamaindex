@@ -127,8 +127,8 @@
             │       └─ 返回融合去重后的节点列表
             │
             ├─ Step 2: rerank_step
-            │       SentenceTransformerRerank（bge-reranker-large）
-            │       保留 top_n=3 最相关节点
+            │       DashScopeRerank（gte-rerank-v2）
+            │       保留 top_n=3 最相关节点；模型不可用时回退到检索分数排序
             │
             ├─ Step 3: generate_step
             │       ResponseSynthesizer
@@ -150,15 +150,15 @@
 
 | 层级 | 技术 / 模型 | 说明 |
 |------|------------|------|
-| **LLM** | DashScope `qwen-plus-2025-07-14` | 对话生成与答案合成，通过阿里云 DashScope API 调用 |
+| **LLM** | DashScope `qwen3.7-plus` | 对话生成与答案合成，通过 OpenAI 兼容端点调用（`llama-index-llms-openai-like`） |
 | **VLM** | DashScope `qwen-vl-plus-latest` | 对 PDF 中提取的图片生成语义描述，使图片内容可被检索 |
-| **Embedding** | `BAAI/bge-large-zh-v1.5`（本地） | 中文向量化，将文本块转为高维向量 |
-| **Reranker** | `BAAI/bge-reranker-large`（本地） | 对召回节点进行精排，过滤低相关结果 |
+| **Embedding** | DashScope `text-embedding-v3` | 中文向量化，API 调用，无需本地模型文件 |
+| **Reranker** | DashScope `gte-rerank-v2` | 对召回节点精排，API 调用；模型不可用时自动回退到检索分数排序 |
 | **向量数据库** | ChromaDB | 持久化存储文档向量，支持相似度检索 |
 | **文档/索引存储** | Redis | 存储原始文档节点（docstore）和索引元数据（index store） |
 | **PDF 解析** | `unstructured`（hi_res + OCR） | 高精度 PDF 解析，支持图片、文本、表格三类元素提取 |
 | **RAG 框架** | LlamaIndex | 统一管理摄取管道、工作流、检索器和响应合成器 |
-| **前端界面** | Gradio | 可视化文档上传、管理和对话交互界面 |
+| **前端界面** | Gradio 6.x | 可视化文档上传、管理和对话交互界面 |
 
 ---
 
@@ -168,9 +168,17 @@
 
 - Python 3.10+
 - Redis 7.x（本地运行，端口 6379）
-- 本地模型文件（路径在 `config/settings.py` 中配置）：
-  - `BAAI/bge-large-zh-v1.5`（Embedding）
-  - `BAAI/bge-reranker-large`（Reranker）
+
+> 本地无 Redis 时用 Docker 启动：
+> ```bash
+> docker run -d --name rag-redis -p 6379:6379 redis:7
+> ```
+> 国内网络拉取镜像：
+> ```bash
+> docker pull docker.m.daocloud.io/library/redis:7-alpine
+> docker tag docker.m.daocloud.io/library/redis:7-alpine redis:7
+> docker run -d --name rag-redis -p 6379:6379 redis:7
+> ```
 
 ### 安装依赖
 
@@ -227,12 +235,12 @@ python main.py
 | 配置项 | 默认值 | 说明 |
 |--------|--------|------|
 | `OPENAI_API_KEY` | `DASHSCOPE_API_KEY` 环境变量 | DashScope API Key |
-| `API_BASE_URL` | `DASHSCOPE_BASE_URL` 环境变量 | DashScope 接入地址 |
-| `OPENAI_MODEL` | `qwen-plus-2025-07-14` | LLM 模型名 |
+| `API_BASE_URL` | `DASHSCOPE_BASE_URL` 环境变量 | DashScope OpenAI 兼容端点 |
+| `OPENAI_MODEL` | `qwen3.7-plus` | LLM 模型名（支持任意 DashScope 有额度的模型） |
 | `VLM_MODEL` | `qwen-vl-plus-latest` | 图片语义描述模型 |
 | `ENABLE_VLM_DESCRIPTION` | `True` | 关闭可跳过 VLM 调用，节省 API 费用 |
-| `EMBEDDING_MODEL_PATH` | 本地绝对路径 | bge-large-zh-v1.5 模型目录 |
-| `RERANK_MODEL_PATH` | 本地绝对路径 | bge-reranker-large 模型目录 |
+| `EMBEDDING_MODEL` | `text-embedding-v3` | DashScope Embedding 模型，API 调用无需本地文件 |
+| `RERANK_MODEL` | `gte-rerank-v2` | DashScope Reranker 模型；不可用时自动回退到检索分数排序 |
 | `CHUNK_SIZE` | `512` | 分块字符数上限 |
 | `CHUNK_OVERLAP` | `50` | 相邻块重叠字符数 |
 | `SIMILARITY_TOP_K` | `5` | 混合检索召回节点数 |
