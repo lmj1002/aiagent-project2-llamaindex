@@ -42,6 +42,17 @@ class MultimodalPDFProcessor:
 
         logger.info(f"总共解析到 {len(raw_pdf_elements)} 个元素")
 
+        # ── unstructured 返回空时，用 pypdf 兜底提取文本 ──────────────────
+        # 常见场景：PPT 转 PDF、矢量图形文字，fast 策略下 pdfminer 读不到内容
+        if not raw_pdf_elements:
+            logger.warning(
+                f"unstructured 未提取到内容（strategy={AppSettings.PDF_STRATEGY}），"
+                "切换到 pypdf 兜底提取文本"
+            )
+            texts = self._fallback_extract_with_pypdf(pdf_path)
+            logger.info(f"pypdf 兜底完成，提取文本块: {len(texts)}")
+            return [], texts, []
+
         # 遍历所有元素
         for i, element in enumerate(raw_pdf_elements):
             # 创建每个元素的内容
@@ -74,6 +85,29 @@ class MultimodalPDFProcessor:
 
         logger.info(f"提取完成 - 图片: {len(images)}, 文本: {len(texts)}, 表格: {len(tables)}")
         return images, texts, tables
+
+    def _fallback_extract_with_pypdf(self, pdf_path: str) -> List[Dict]:
+        """pypdf 兜底：按页提取文本，返回与 unstructured 相同格式的 texts 列表"""
+        try:
+            from pypdf import PdfReader
+            reader = PdfReader(pdf_path)
+            texts = []
+            for page_num, page in enumerate(reader.pages, start=1):
+                content = page.extract_text() or ""
+                content = content.strip()
+                if content:
+                    texts.append({
+                        'type': 'NarrativeText',
+                        'page': page_num,
+                        'bbox': None,
+                        'content': content,
+                        'element_id': f"{Path(pdf_path).stem}_page{page_num}",
+                    })
+            logger.info(f"pypdf 提取完成: {len(reader.pages)} 页，有文字页: {len(texts)}")
+            return texts
+        except Exception as e:
+            logger.error(f"pypdf 兜底也失败: {e}")
+            return []
 
     def _process_image_element(self, element: Image, element_info: Dict, pdf_path: str) -> Optional[Dict]:
         """处理图片元素"""
