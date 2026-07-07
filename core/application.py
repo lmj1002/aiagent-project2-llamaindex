@@ -77,7 +77,9 @@ class RAGApplication:
 
                 # 将检索到的文档的内容和元数据显示在页面中
                 for i, source in enumerate(result["sources"], 1):
-                    sources_info += f"{i}. 相似度: {source['score']:.3f}\n"
+                    score = source['score']
+                    score_str = f"{score:.3f}" if score is not None else "N/A"
+                    sources_info += f"{i}. 相似度: {score_str}\n"
                     sources_info += f"   内容预览: {source['content']}\n\n"
                     # 如果包含image_path属性并且不为空，那么就将图片解析到页面中
                     if 'image_paths' in source['metadata'] and source['metadata']['image_paths']:
