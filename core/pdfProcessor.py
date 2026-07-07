@@ -32,7 +32,7 @@ class MultimodalPDFProcessor:
             filename=pdf_path,  # 指定要解析的 PDF 文件路径
             extract_images_in_pdf=True,  # 是否提取 PDF 中的图片（将其作为 ImageBlock 返回）
             infer_table_structure=True,  # 是否尝试识别并解析表格结构（会输出结构化的 Table 类型元素）
-            strategy='hi_res',  # 提取策略：使用高分辨率模式（hi_res）+ OCR，可处理图像型或复杂布局 PDF
+            strategy=AppSettings.PDF_STRATEGY,  # hi_res（高精度）或 fast（无需下载模型）
             extract_image_block_output_dir=self.image_output_dir  # 图片输出目录，提取出的图片会保存到这个路径
         )
 

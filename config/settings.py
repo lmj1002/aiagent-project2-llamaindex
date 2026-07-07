@@ -25,6 +25,9 @@ class Settings:
     CHUNK_SIZE: int = 512
     CHUNK_OVERLAP: int = 50
     TITLE_EXTRACTOR_NODES: int = 5
+    # PDF 解析策略：hi_res（高精度，需下载 YOLOX 模型，国内需配 HF_ENDPOINT 镜像）
+    #              fast（快速，无需下载模型，图表识别能力弱）
+    PDF_STRATEGY: str = "fast"
 
     # 检索配置
     SIMILARITY_TOP_K: int = 5

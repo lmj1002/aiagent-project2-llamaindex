@@ -2,6 +2,9 @@ import os
 import sys
 from pathlib import Path
 
+# HuggingFace 国内镜像，避免 unstructured hi_res 策略下载模型时被墙
+os.environ.setdefault("HF_ENDPOINT", "https://hf-mirror.com")
+
 import gradio as gr
 
 # 添加项目根目录到Python路径
