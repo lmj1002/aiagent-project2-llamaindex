@@ -16,7 +16,7 @@ from llama_index.storage.docstore.redis import RedisDocumentStore
 from llama_index.storage.index_store.redis import RedisIndexStore
 import chromadb
 from llama_index.embeddings.dashscope import DashScopeEmbedding
-from llama_index.llms.dashscope import DashScope
+from llama_index.llms.openai_like import OpenAILike
 from config.settings import Settings as AppSettings
 from utils.logger import setup_logger
 from core.pdfProcessor import MultimodalPDFProcessor
@@ -39,11 +39,13 @@ class DocumentIngestionPipeline:
         self._initialize_storage_components()
 
     def _setup_models(self):
-        """设置LLM和嵌入模型（全部使用 DashScope API，无需本地模型文件）"""
-        Settings.llm = DashScope(
+        """设置LLM和嵌入模型（走 OpenAI 兼容端点，兼容 qwen3.x 等非官方 OpenAI 模型名）"""
+        Settings.llm = OpenAILike(
+            model=AppSettings.OPENAI_MODEL,
             api_key=AppSettings.OPENAI_API_KEY,
-            model_name=AppSettings.OPENAI_MODEL,
-            temperature=AppSettings.OPENAI_TEMPERATURE
+            api_base=AppSettings.API_BASE_URL,
+            temperature=AppSettings.OPENAI_TEMPERATURE,
+            is_chat_model=True,
         )
         Settings.embed_model = DashScopeEmbedding(
             model_name=AppSettings.EMBEDDING_MODEL,

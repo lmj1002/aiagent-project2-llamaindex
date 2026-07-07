@@ -12,7 +12,7 @@ class Settings:
     # OpenAI配置
     OPENAI_API_KEY: Optional[str] = os.getenv("DASHSCOPE_API_KEY")
     API_BASE_URL = os.getenv("DASHSCOPE_BASE_URL")
-    OPENAI_MODEL: str = "qwen-plus-2025-07-14"
+    OPENAI_MODEL: str = "qwen3.7-plus"
     OPENAI_TEMPERATURE: float = 0.1
     # DashScope Embedding 模型（API调用，无需本地文件）
     EMBEDDING_MODEL: str = "text-embedding-v3"
