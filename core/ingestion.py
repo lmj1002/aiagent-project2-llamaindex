@@ -50,6 +50,8 @@ class DocumentIngestionPipeline:
         Settings.embed_model = DashScopeEmbedding(
             model_name=AppSettings.EMBEDDING_MODEL,
             api_key=AppSettings.OPENAI_API_KEY,
+            text_type="document",
+            embed_batch_size=10,   # DashScope 上限是25，发满25会触发边界错误，用10保守批量
         )
 
     def _create_pipeline(self):
